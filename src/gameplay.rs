@@ -23,12 +23,11 @@ fn create_sentence() -> String {
     shuffled_lines.shuffle(&mut rng);
 
     // Select the first 15 lines.
-    shuffled_lines[..2].to_vec().join(" ")
+    shuffled_lines[..4].to_vec().join(" ")
 }
 
 impl Default for Game {
     fn default() -> Self {
-        // let letters: Vec<char> = game.sentenc/e.to_string().chars().collect();
         let random_sentence = create_sentence();
         Self { pointer: 0, sentence: random_sentence.clone(), sentence_size: random_sentence.clone().len(), letters: random_sentence.clone().to_string().chars().collect() }
     }
