@@ -1,3 +1,5 @@
+mod gameplay;
+ use gameplay::Game;
 use crossterm::{
     event::{self, KeyCode, KeyEventKind},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
@@ -8,6 +10,18 @@ use ratatui::{
     widgets::Paragraph,
 };
 use std::io::{stdout, Result};
+use ratatui::layout::Alignment;
+use ratatui::prelude::{Line, Span, Style};
+use ratatui::style::Color;
+
+
+fn render_sentence<'a>(sentence: &'a str, game:&'a Game) -> Line<'a> {
+    Line::from(vec![
+        Span::raw(&sentence[0..game.pointer]),
+        Span::styled(&sentence[game.pointer ..game.pointer +1], Style::default().fg(Color::Green)),
+        Span::raw(&sentence[game.pointer +1..game.sentence_size]),
+    ])
+}
 
 fn main() -> Result<()> {
     stdout().execute(EnterAlternateScreen)?;
@@ -20,14 +34,18 @@ fn main() -> Result<()> {
 
     let mut index = (0, letters.len());
 
+    let mut game = Game {
+        pointer: 0,
+        sentence_size: letters.len()
+    };
+
     loop {
 
         terminal.draw(|frame| {
             let area = frame.size();
             frame.render_widget(
-                Paragraph::new(sentence)
-                    .white()
-                    .on_blue(),
+                Paragraph::new(render_sentence(&sentence, &game))
+                    .white().alignment(Alignment::Center),
                 area,
             );
         })?;
@@ -37,10 +55,10 @@ fn main() -> Result<()> {
                     break;
                 }
 
-                if key.kind == KeyEventKind::Press && key.code == KeyCode::Char(letters[index.0]) {
-                    index.0 = index.0 + 1;
-                    if (index.0 == index.1) {
-                        sentence = "gagné"
+                if key.kind == KeyEventKind::Press && key.code == KeyCode::Char(letters[game.pointer]) {
+                    game.pointer = game.pointer + 1;
+                    if game.pointer == game.sentence_size {
+                        break;
                     }
                 }
             }
