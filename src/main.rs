@@ -16,11 +16,11 @@ use ratatui::style::Color;
 use ratatui::widgets::{Block, Padding};
 
 
-fn render_sentence<'a>(sentence: &'a str, game:&'a Game) -> Line<'a> {
+fn render_sentence(game: &Game) -> Line {
     Line::from(vec![
-        Span::styled(&sentence[0..game.pointer], Style::default().fg(Color::Green)),
-        Span::styled(&sentence[game.pointer ..game.pointer +1], Style::default().fg(Color::Yellow)),
-        Span::raw(&sentence[game.pointer +1..game.sentence_size]),
+        Span::styled(&game.sentence[0..game.pointer], Style::default().fg(Color::Green)),
+        Span::styled(&game.sentence[game.pointer ..game.pointer +1], Style::default().fg(Color::Yellow)),
+        Span::raw(&game.sentence[game.pointer +1..game.sentence_size]),
     ])
 }
 
@@ -30,21 +30,13 @@ fn main() -> Result<()> {
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
     terminal.clear()?;
 
-    let mut sentence = "sentence ok scala rust billing-api ccadmin ccapi";
-    let letters: Vec<char> = sentence.to_string().chars().collect();
-
-    let mut index = (0, letters.len());
-
-    let mut game = Game {
-        pointer: 0,
-        sentence_size: letters.len()
-    };
+    let mut game = Game::default();
 
     loop {
 
         terminal.draw(|frame| {
             let area = frame.size();
-            let p = Paragraph::new(render_sentence(&sentence, &game))
+            let p = Paragraph::new(render_sentence(&game))
                 .block(Block::new().style(Style::new().bg(Color::Black)).padding(Padding::new(
                     0, // left
                     0, // right
@@ -61,10 +53,10 @@ fn main() -> Result<()> {
                     break;
                 }
 
-                if key.kind == KeyEventKind::Press && key.code == KeyCode::Char(letters[game.pointer]) {
+                if key.kind == KeyEventKind::Press && key.code == KeyCode::Char(game.letters[game.pointer]) {
                     game.pointer = game.pointer + 1;
                     if game.pointer == game.sentence_size {
-                        break;
+                        game = Game::default()
                     }
                 }
             }
